@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -eux
+
+export PATH=$PATH:$SNAP/bin:$SNAP/usr/bin:$SNAP_DATA/opt/workspacesclient
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SNAP/usr/lib:$SNAP/lib:$SNAP/usr/lib/x86_64-linux-gnu:$SNAP_DATA/opt/workspacesclient
+
+if [ -f $SNAP_DATA/opt/workspacesclient/appsettings.json ]; then
+    VERSION=$(cat $SNAP_DATA/opt/workspacesclient/appsettings.json | jq .ProductVersion | tr -d '"')
+    if [ "$VERSION" = "$SNAP_VERSION" ]; then
+        echo "Versions match"
+        exit 0
+    else
+        echo "Versions don't match"
+        rm -rf $SNAP_DATA/opt
+        rm -rf $SNAP_DATA/usr
+    fi
+fi
+
+WORKSPACES_DEB="workspacesclient_${SNAP_VERSION}_amd64.deb"
+
+wget "https://d3nt0h4h6pmmc4.cloudfront.net/ubuntu/dists/bionic/main/binary-amd64/${WORKSPACES_DEB}" -P $SNAP_DATA
+
+cd $SNAP_DATA
+ar xv $WORKSPACES_DEB
+tar xvf data.tar.xz --no-same-owner
+rm -rf $SNAP_DATA/data.tar.xz
+rm -rf $SNAP_DATA/control.tar.xz
+rm -rf $SNAP_DATA/debian-binary
+rm -rf $SNAP_DATA/$WORKSPACES_DEB

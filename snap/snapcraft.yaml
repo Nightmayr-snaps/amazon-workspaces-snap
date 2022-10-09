@@ -1,0 +1,70 @@
+name: amz-workspaces
+icon: snap/gui/amz-workspaces.svg
+summary: Amazon Workspaces
+base: core18
+description: |
+  Client for Amazon WorkSpaces - a managed, secure Desktop-as-a-Service (DaaS) solution.
+
+  NOTE: This wrapper is not verified by, affiliated with, or supported by Amazon.com, Inc. This snap will be de-listed if/when Amazon decide to distribute
+  an official Workspaces client snap.
+adopt-info: workspaces
+confinement: strict
+grade: stable
+compression: lzo
+
+apps:
+  amz-workspaces:
+    command: bin/workspaces-launch
+    extensions:
+      - gnome-3-34
+    plugs:
+      - audio-playback
+      - audio-record
+      - bluez
+      - desktop
+      - desktop-legacy
+      - hardware-observe
+      - home
+      - mount-observe
+      - network
+      - network-observe
+      - opengl
+      - process-control
+      - screen-inhibit-control
+      - wayland
+      - x11
+
+parts:
+  workspaces:
+    plugin: nil
+    build-packages:
+      - jq
+      - wget
+    stage-packages:
+      - wget
+      - jq
+      - libgraphicsmagick++-q16-12
+      - libhiredis0.13
+      - liblttng-ust0
+      - libssl1.1
+      - libusb-1.0-0
+      - libva2
+      - libxcb-util1
+    override-build: |
+      wget "https://d3nt0h4h6pmmc4.cloudfront.net/workspacesclient_amd64.deb"
+      dpkg-deb -xv workspacesclient_amd64.deb .
+      VERSION=$(cat $SNAPCRAFT_PART_BUILD/opt/workspacesclient/appsettings.json | jq .ProductVersion | tr -d '"')
+      snapcraftctl set-version $VERSION
+  launcher:
+    plugin: dump
+    source: snap/local/launcher
+    source-type: local
+    organize:
+      '*': bin/
+
+hooks:
+  configure:
+    plugs: [network]
+# environment:
+#   PATH: $PATH:$SNAP/bin:$SNAP/usr/bin:$SNAP_DATA/opt/workspacesclient
+#   LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/lib:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP_DATA/opt/workspacesclient

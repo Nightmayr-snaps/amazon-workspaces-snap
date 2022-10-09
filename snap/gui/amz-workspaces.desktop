@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Amazon WorkSpaces
+Comment=Amazon WorkSpace Client
+Exec=amz-workspaces %u
+Icon=${SNAP}/meta/gui/amz-workspaces.svg
+Terminal=false
+MimeType=x-scheme-handler/workspaces;
+Categories=Network;RemoteAccess;
+Keywords=workspaces;remote;amazon;aws;
+StartupWMClass=workspacesclient
