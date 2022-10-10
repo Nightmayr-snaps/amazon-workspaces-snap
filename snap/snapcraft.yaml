@@ -10,6 +10,9 @@ description: |
 adopt-info: workspaces
 confinement: strict
 grade: stable
+architectures:
+  - build-on: amd64
+    run-on: amd64
 compression: lzo
 
 apps:
