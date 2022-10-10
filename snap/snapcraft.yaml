@@ -30,6 +30,7 @@ apps:
       - home
       - mount-observe
       - network
+      - network-status
       - network-observe
       - opengl
       - process-control
