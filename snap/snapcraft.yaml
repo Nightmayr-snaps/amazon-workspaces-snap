@@ -1,7 +1,7 @@
 name: amz-workspaces
 icon: snap/gui/amz-workspaces.svg
 summary: Amazon Workspaces
-base: core18
+base: core20
 description: |
   Client for Amazon WorkSpaces - a managed, secure Desktop-as-a-Service (DaaS) solution.
 
@@ -18,8 +18,10 @@ compression: lzo
 apps:
   amz-workspaces:
     command: bin/workspaces-launch
+    environment:
+      LD_LIBRARY_PATH: $SNAP_DATA/opt/workspacesclient:$SNAP_DATA/usr/lib/x86_64-linux-gnu/pcoip-client/vchan_plugins
     extensions:
-      - gnome-3-34
+      - gnome-3-38
     plugs:
       - audio-playback
       - audio-record
@@ -40,6 +42,7 @@ apps:
 
 parts:
   workspaces:
+    after: [ libssl, hiredis ]
     plugin: nil
     build-packages:
       - jq
@@ -48,17 +51,69 @@ parts:
       - wget
       - jq
       - libgraphicsmagick++-q16-12
-      - libhiredis0.13
       - liblttng-ust0
-      - libssl1.1
       - libusb-1.0-0
       - libva2
       - libxcb-util1
+      - xz-utils
     override-build: |
       wget "https://d3nt0h4h6pmmc4.cloudfront.net/workspacesclient_amd64.deb"
       dpkg-deb -xv workspacesclient_amd64.deb .
       VERSION=$(cat $SNAPCRAFT_PART_BUILD/opt/workspacesclient/appsettings.json | jq .ProductVersion | tr -d '"')
       snapcraftctl set-version $VERSION
+  libssl:
+    plugin: make
+    source: https://github.com/openssl/openssl.git
+    source-tag: OpenSSL_1_1_1q
+    override-build: |
+      ./config shared --prefix=/usr --openssldir=/usr/lib/ssl --libdir=lib/$SNAPCRAFT_ARCH_TRIPLET no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms enable-ec_nistp_64_gcc_128
+      snapcraftctl build
+    build-packages:
+      - build-essential
+      - perl
+    prime: &exclusions
+      - -usr/include
+      - -usr/share/doc
+      - -usr/share/man
+      - -usr/**/pkgconfig
+      - -usr/**/*.a
+      - -usr/**/*.la
+  hiredis:
+    plugin: make
+    source: https://github.com/redis/hiredis.git
+    source-tag: v0.13.3
+    make-parameters:
+      - PREFIX=/usr
+      - LIBRARY_PATH=lib/$SNAPCRAFT_ARCH_TRIPLET
+    prime: *exclusions
+  # liblttng-ust0:
+  #   plugin: autotools
+  #   source: git://git.lttng.org/lttng-ust.git
+  #   source-tag: v2.12.7
+  #   autotools-configure-parameters:
+  #     - --prefix=/usr
+  #     - --libdir=/usr/lib/$SNAPCRAFT_ARCH_TRIPLET #overriding libdir removes the $CRAFT_STAGE prefix so temporarily commenting this out. See https://forum.snapcraft.io/t/libtool-warning-library-was-moved/31951
+  #     - --libexecdir=/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+  #     - --sysconfdir=/etc
+  #     - --includedir=/usr/include/$SNAPCRAFT_ARCH_TRIPLET
+  #     - --localstatedir=/var
+  #     - --disable-man-pages
+  #   override-build: |
+  #     ./bootstrap
+  #     ./configure --prefix=/usr --libdir=/usr/lib/$CRAFT_ARCH_TRIPLET --libexecdir=/usr/lib/$CRAFT_ARCH_TRIPLET --sysconfdir=/etc --includedir=/usr/include/$CRAFT_ARCH_TRIPLET --localstatedir=/var --disable-man-pages
+  #     make
+  #     make install DESTDIR=$CRAFT_PART_INSTALL
+  #   build-packages:
+  #     - automake
+  #     - libtool
+  #     - pkg-config
+  #     - liburcu-dev
+  #     - libnuma-dev
+  #   stage-packages:
+  #     - liburcu6
+  #   organize:
+  #     'usr/local/*': usr/
+  #   prime: *exclusions
   launcher:
     plugin: dump
     source: snap/local/launcher
@@ -69,6 +124,3 @@ parts:
 hooks:
   configure:
     plugs: [network]
-# environment:
-#   PATH: $PATH:$SNAP/bin:$SNAP/usr/bin:$SNAP_DATA/opt/workspacesclient
-#   LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/lib:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP_DATA/opt/workspacesclient
