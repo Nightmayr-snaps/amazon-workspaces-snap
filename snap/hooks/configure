@@ -17,9 +17,9 @@ if [ -f $SNAP_DATA/opt/workspacesclient/appsettings.json ]; then
     fi
 fi
 
-WORKSPACES_DEB="workspacesclient_${SNAP_VERSION}_amd64.deb"
+WORKSPACES_DEB="workspacesclient_focal_amd64.deb"
 
-wget "https://d3nt0h4h6pmmc4.cloudfront.net/ubuntu/dists/bionic/main/binary-amd64/${WORKSPACES_DEB}" -P $SNAP_DATA
+wget "https://d3nt0h4h6pmmc4.cloudfront.net/${WORKSPACES_DEB}" -P $SNAP_DATA
 
 cd $SNAP_DATA
 ar xv $WORKSPACES_DEB

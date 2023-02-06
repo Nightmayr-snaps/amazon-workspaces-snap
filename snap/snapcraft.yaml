@@ -63,8 +63,8 @@ parts:
       - libxcb-util1
       - xz-utils
     override-build: |
-      wget "https://d3nt0h4h6pmmc4.cloudfront.net/ubuntu/dists/bionic/main/binary-amd64/workspacesclient_4.3.0.1766_amd64.deb"
-      dpkg-deb -xv workspacesclient_4.3.0.1766_amd64.deb .
+      wget "https://d3nt0h4h6pmmc4.cloudfront.net/workspacesclient_focal_amd64.deb"
+      dpkg-deb -xv workspacesclient_focal_amd64.deb .
       VERSION=$(cat $SNAPCRAFT_PART_BUILD/opt/workspacesclient/appsettings.json | jq .ProductVersion | tr -d '"')
       snapcraftctl set-version $VERSION
   libssl:
