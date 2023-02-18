@@ -87,7 +87,7 @@ parts:
   hiredis:
     plugin: make
     source: https://github.com/redis/hiredis.git
-    source-tag: v0.13.3
+    source-tag: v0.14.1
     make-parameters:
       - PREFIX=/usr
       - LIBRARY_PATH=lib/$SNAPCRAFT_ARCH_TRIPLET
